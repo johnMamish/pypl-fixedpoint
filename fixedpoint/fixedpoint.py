@@ -1,6 +1,6 @@
 """FixedPoint class."""
 import logging
-from math import log2 as _log2, ceil as _ceil
+from math import log2 as _log2, ceil as _ceil, sqrt as _sqrt
 import sys
 import operator
 from typing import (Any, Callable, cast, ClassVar, Dict, List, Literal,
@@ -997,6 +997,20 @@ class FixedPoint:
     def __invert__(self: FixedPointType) -> FixedPointType:
         """Unary bitwise inversion."""
         return self.__class__.__new(self.bitmask & ~self._bits, self._signed,
+                                    self._m, self._n, self.overflow,
+                                    self.rounding, self.str_base,
+                                    self.overflow_alert,
+                                    self.implicit_cast_alert,
+                                    self.mismatch_alert)
+
+    def sqrt(self: FixedPointType) -> FixedPointType:
+        """Square Root"""
+        if (self._signed and self.bits['sign']):
+            from fixedpoint import FixedPointError
+            raise FixedPointError("Square root of a negative number cannot be taken.")
+
+        bits: int = int(_sqrt(self._signedint << self._n))
+        return self.__class__.__new(self.bitmask & bits, self._signed,
                                     self._m, self._n, self.overflow,
                                     self.rounding, self.str_base,
                                     self.overflow_alert,
